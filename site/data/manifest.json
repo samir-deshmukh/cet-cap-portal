@@ -1,0 +1,28 @@
+{
+  "courses": [
+    {
+      "course": "BBA",
+      "file": "cutoffs_BBA.json",
+      "groups": 4629,
+      "colleges": 412
+    },
+    {
+      "course": "BCA",
+      "file": "cutoffs_BCA.json",
+      "groups": 5849,
+      "colleges": 438
+    },
+    {
+      "course": "MBA",
+      "file": "cutoffs_MBA.json",
+      "groups": 7162,
+      "colleges": 413
+    },
+    {
+      "course": "MCA",
+      "file": "cutoffs_MCA.json",
+      "groups": 5049,
+      "colleges": 240
+    }
+  ]
+}

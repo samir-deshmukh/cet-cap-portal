@@ -1,0 +1,6 @@
+raw_value,lane_code,lane_full
+HU,HU,Home University quota
+OHU,OHU,Other Than Home University quota
+State Level,SL,State Level quota
+PWD,PWD,"Persons With Disability quota (institute-wide, not split by HU/OHU)"
+DEF,DEF,"Defence quota (institute-wide, not split by HU/OHU)"

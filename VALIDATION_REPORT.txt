@@ -1,0 +1,63 @@
+Validating 30 files in data/raw
+
+FILE                                      YR    RD     ROWS  CAT  STG  SEC  PRG  PCT  DUP  ANOM
+------------------------------------------------------------------------------------------------------
+BBA_24_C1.csv                             2024  1     3,119    0    0    0    0    0    0     0
+BBA_24_C2.csv                             2024  2     1,927    0    0    0    0    0    0     0
+BBA_24_C3.csv                             2024  3       692    0    0    0    0    0    0     0
+BBA_25_C1.csv                             2025  1     2,878    0    0    0    0    0    0     0
+BBA_26_C1.csv                             2026  1     2,115    0    0    0    0    0    0     0
+BCA_24_C1.csv                             2024  1     3,619    0    0    0    0    0    0     0
+BCA_24_C2.csv                             2024  2     2,178    0    0    0    0    0    0     1
+BCA_24_C3.csv                             2024  3       675    0    0    0    0    0    0     0
+BCA_26_C1.csv                             2026  1     1,336    0    0    0    0    0    0     0
+BCA_26_C2.csv                             2026  2       319    0    0    0    0    0    0     0
+BCA_26_C3.csv                             2026  3     2,490    0    0    0    0    0    0     0
+BCA_26_C4.csv                             2026  4       372    0    0    0    0    0    0     0
+MBA_25_C1.csv                             2025  1     4,046    0    0    0    0    0    0     0
+MBA_25_C2.csv                             2025  2     4,334    0    0    0    0    0    0     0
+MBA_25_C3.csv                             2025  3     2,412    0    0    0    0    0    0     0
+MBA_26_C1.csv                             2026  1     4,400    0    0    0    0    0    0     0
+MBA_26_C2.csv                             2026  2     4,814    0    0    0    0    0    0     0
+MBA_26_C3.csv                             2026  3     2,407    0    0    0    0    0    0     0
+MBA_26_C4.csv                             2026  4     1,315    0    0    0    0    0    0     0
+MCA_24_C1.csv                             2024  1     1,807    0    0    0    0    0    0     0
+MCA_24_C2.csv                             2024  2     2,011    0    0    0    0    0    0     0
+MCA_24_C3.csv                             2024  3     1,327    0    0    0    0    0    0     0
+MCA_25_C1.csv                             2025  1     2,412    0    0    0    0    0    0     0
+MCA_25_C2.csv                             2025  2     2,570    0    0    0    0    0    0     0
+MCA_25_C3.csv                             2025  3     1,642    0    0    0    0    0    0     0
+MCA_25_C4.csv                             2025  4     1,173    0    0    0    0    0    0     0
+MCA_26_C1.csv                             2026  1     2,908    0    0    0    0    0    0     0
+MCA_26_C2.csv                             2026  2     3,340    0    0    0    0    0    0     0
+MCA_26_C3.csv                             2026  3     1,904    0    0    0    0    0    0     0
+MCA_26_C4.csv                             2026  4     1,228    0    0    0    0    0    0     0
+
+Forward-filled program_name on 16163 rows
+Exact duplicate rows detected: 0
+
+=== DUPLICATE CONTENT ===
+  ✓ None
+
+=== UNKNOWN CATEGORIES (0) ===
+  ✓ All recognised
+
+=== UNKNOWN STAGES (0) ===
+  ✓ All recognised
+
+=== UNKNOWN SECTIONS (0) ===
+  ✓ All recognised
+
+=== UNKNOWN PROGRAM NAMES (0) ===
+  ✓ All recognised
+
+=== QUARANTINED EXTRACTION ANOMALIES (1) ===
+  (rows with no institution_code AND no institution_name —
+   broken PDF extraction, not a category/data issue. These
+   are excluded from cutoffs and logged to ingest_errors,
+   not counted as an outstanding issue below.)
+  ⚠ BCA_24_C2.csv: category-field='GOVERNMENT' stage='Stage IV' rank='19937'
+
+============================================================
+Total issues: 0  (+ 1 quarantined anomalies, handled separately)
+============================================================

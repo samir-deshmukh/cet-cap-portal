@@ -1,0 +1,49 @@
+base_code,category_full,category_group
+OPEN,Open,Open
+SC,Scheduled Caste,Reserved
+ST,Scheduled Tribe,Reserved
+OBC,Other Backward Class,Reserved
+SEBC,Socially and Educationally Backward Class,Reserved
+EWS,Economically Weaker Section,Reserved
+VJ,Vimukta Jati,Reserved
+VJ/DT,Vimukta Jati / Denotified Tribe,Reserved
+NT1,Notified Tribe - 1,Reserved
+NT2,Notified Tribe - 2,Reserved
+NT3,Notified Tribe - 3,Reserved
+NTA,Notified Tribe - A,Reserved
+NTB,Notified Tribe - B,Reserved
+NTC,Notified Tribe - C,Reserved
+NTD,Notified Tribe - D,Reserved
+TFWS,Tuition Fee Waiver Scheme,Special
+MI,Minority,Minority
+PWD,PWD - Unspecified,Special
+PWDOPEN,PWD - Open,Special
+PWDSC,PWD - Scheduled Caste,Special
+PWDST,PWD - Scheduled Tribe,Special
+PWDOBC,PWD - OBC,Special
+PWDROBC,PWD - Reserved OBC,Special
+PWDSEBC,PWD - SEBC,Special
+PWDNTB,PWD - NTB,Special
+PWDNTC,PWD - NTC,Special
+PWDNTD,PWD - NTD,Special
+PWDRSC,PWD - Reserved SC,Special
+PWDRSEBC,PWD - Reserved SEBC,Special
+PWDRNTA,PWD - Reserved NTA,Special
+PWDRNTB,PWD - Reserved NTB,Special
+PWDRNTC,PWD - Reserved NTC,Special
+PWDRNTD,PWD - Reserved NTD,Special
+DEFOPEN,Defence - Open,Special
+DEFSC,Defence - Scheduled Caste,Special
+DEFST,Defence - Scheduled Tribe,Special
+DEFOBC,Defence - OBC,Special
+DEFSEBC,Defence - SEBC,Special
+DEFROBC,Defence - Reserved OBC,Special
+DEFRSC,Defence - Reserved SC,Special
+DEFRSEBC,Defence - Reserved SEBC,Special
+DEFRNTA,Defence - Reserved NTA,Special
+DEFRNTB,Defence - Reserved NTB,Special
+DEFRNTC,Defence - Reserved NTC,Special
+DEFRNTD,Defence - Reserved NTD,Special
+ORPHAN,Orphan - Unspecified,Special
+ORPHAN_INST,Orphan - Institutional,Special
+ORPHAN_NONINST,Orphan - Non-Institutional,Special

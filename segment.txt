@@ -1,0 +1,311 @@
+
+  /* ── Dropdown option lists.
+        Filled in at runtime from the real data (see loadRealCollegeData) —
+        these placeholders are only what's shown for the instant before
+        that fetch resolves. The first item is always the empty
+        "please choose" placeholder — it is NOT a valid filter value,
+        so the results list stays empty until the person actively
+        picks both a city and a course (see getFiltered()). ── */
+  cityOptions:   [{ value: "", label: "Select City" }],
+  courseOptions: [{ value: "", label: "Select Course" }],
+
+  /* The sentinel value meaning "nothing chosen yet" */
+  unselected: "",
+
+  /* ── Status thresholds ──
+     diff = yourPercentile − collegePercentile
+        diff >= safeBand        → "Safe" (you're comfortably above)
+        diff >= borderlineBand  → "Borderline" (close call)
+        otherwise               → "Reach" (below cutoff, ambitious)  */
+  safeBand: 1.0,
+  borderlineBand: -1.0,
+
+  /* What each status is called in the UI, and its CSS dot class */
+  statusLabels: { safe: "Safe", borderline: "Borderline", reach: "Reach" },
+  statusClasses: { safe: "status-safe", borderline: "status-border", reach: "status-reach" },
+
+  /* ── Default sort applied on page load: "percentile" | "name" | "seats" ── */
+  defaultSort: "percentile",
+
+  /* ── Gap-chart defaults ──
+     If a college doesn't define its own `history`, one is auto-generated
+     from its current percentile plus these year-to-year offsets. */
+  historyYears:   [2021, 2022, 2023, 2024],
+  historyOffsets: [-1.20, -0.70, -0.35, 0.00],
+
+  /* ═════════════════════════════════════════════════════════════
+     THE COLLEGE LIST
+     ─────────────────────────────────────────────────────────────
+     Populated at page load from site/data/search_index.json (real
+     data, exported by scripts/export_search_index.py from the
+     ingested CET CAP cutoffs) — see loadRealCollegeData() below.
+     Fields present: id, name, city, course, cutoff, percentile,
+     seats, website, history, graph_history. Fields the reference-site template
+     had but the real data doesn't (fees, duration, established,
+     about, highlights, placement, eligibilityNote) are simply
+     absent — renderSlide() already skips any section whose field
+     is missing, so nothing fake is shown in their place.
+     ═════════════════════════════════════════════════════════════ */
+  colleges: []
+};
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   ██  JS SECTION 2: SLIDE RENDERING
+   ───────────────────────────────────────────────────────────────────
+   Functions that build the HTML string that goes inside the slide.
+   If you want to change what a college slide looks like, edit these.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── getHistory(college) ─────────────────────────────────────
+   Returns the 4-year percentile history for a college.
+   If the college has its own `history` array, use that.
+   Otherwise, auto-generate one from its current percentile
+   plus the offsets defined in CONFIG.historyOffsets.          */
+function getHistory(college) {
+  if (Array.isArray(college.history) && college.history.length) {
+    return college.history;
+  }
+  const years   = CONFIG.historyYears;
+  const offsets = CONFIG.historyOffsets;
+  return years.map((y, i) => ({
+    year: y,
+    percentile: Math.max(0, Math.min(100, college.percentile + (offsets[i] ?? 0)))
+  }));
+}
+
+/* ── buildGapChart(college, userPct) ────────────────────────
+   Builds the HTML for the "gap vs cutoff across years" chart.
+   For each year, gap = userPct − thatYearCutoff.
+   Positive gaps draw bars ABOVE the zero line (dark).
+   Negative gaps draw bars BELOW the zero line (light grey).
+   The tallest bar fills the whole half-height; others scale
+   proportionally against maxAbs.                              */
+function buildGapChart(college, userPct) {
+  /* IMPORTANT: this chart has its own data source. Do NOT use
+     percentileRange(), c.low/c.high, or any all-years eligibility range.
+     graph_history contains the raw yearly MIN/MAX percentile pair for
+     this exact college+course and exact year. */
+  const rawGraphHistory = Array.isArray(college.graph_history)
+    ? college.graph_history
+    : [];
+
+  const yearRanges = rawGraphHistory
+    .map(h => {
+      const year = Number(h.year);
+      const low = Number(h.low);
+      const high = Number(h.high);
+      if (!Number.isFinite(year) || !Number.isFinite(low) || !Number.isFinite(high)) return null;
+      return {
+        year,
+        low: Math.max(0, Math.min(100, Math.min(low, high))),
+        high: Math.max(0, Math.min(100, Math.max(low, high)))
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.year - b.year);
+
+  const highest = yearRanges.reduce((a, b) => !a || b.high > a.high ? b : a, null);
+  const lowest = yearRanges.reduce((a, b) => !a || b.low < a.low ? b : a, null);
+
+  const formatPct = value => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return "—";
+    return n.toFixed(2).replace(/\.?0+$/, "");
+  };
+
+  const cols = yearRanges.map(r => {
+    /* Bar height is THIS YEAR'S high percentile only.
+       Label is THIS YEAR'S high-low pair. */
+    const rangeLabel = `${formatPct(r.high)}-${formatPct(r.low)}`;
+    return `
+      <div class="d-gap-col">
+        <div class="d-gap-bar-wrap">
+          <div class="d-gap-bar" data-h="${r.high}">
+            <span class="d-gap-val">${rangeLabel}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+
+  const yearsHTML = yearRanges.map(r => `<div>${r.year}</div>`).join("");
+
+  return `
+    <div class="d-section">
+      <div class="d-section-title">Cutoff Trend · Across Years</div>
+      <div class="d-gap-summary">
+        <span class="d-gap-summary-item hi">Highest: <strong>${highest ? formatPct(highest.high) : "—"}%</strong> (${highest ? highest.year : "—"})</span>
+        <span class="d-gap-summary-item lo">Lowest: <strong>${lowest ? formatPct(lowest.low) : "—"}%</strong> (${lowest ? lowest.year : "—"})</span>
+      </div>
+      <div class="d-gap-chart">
+        <div class="d-gap-plot">
+          <div class="d-gap-grid"></div>
+          <div class="d-gap-yaxis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+          <div class="d-gap-cols">${cols}</div>
+        </div>
+        <div class="d-gap-years">${yearsHTML}</div>
+      </div>
+    </div>`;
+}
+
+/* ── renderDrawerTrendSection() ──────────────────────────────
+   Markup for the drawer's own "Cutoff trend by category & quota"
+   mini-widget. Reuses the exact same CSS classes as the page-level
+   Trends widget (.field, .round-chip, .trends-empty, .tin-card, ...)
+   so it looks like one design system, just at drawer scale. Every id
+   here is drawer-scoped (dTrend*) — createTrendsController() is handed
+   these ids fresh each time showDrawer() opens, see there for wiring.
+   Course + college aren't shown as dropdowns (they're already fixed
+   by which college was clicked) but still exist as hidden <select>s
+   so the shared controller logic needs no special-casing for them. */
+function renderDrawerTrendSection() {
+  return `
+    <div class="d-section">
+      <div class="d-section-title">Cutoff Trend · by Category &amp; Quota</div>
+      <p class="d-text" style="margin-bottom:16px;">This college can have dozens of cutoff lines depending on category and Home/Other-University quota — pick the ones that apply to you.</p>
+
+      <select id="dTrendCourse" style="display:none"></select>
+      <select id="dTrendCollege" style="display:none"></select>
+
+      <div class="d-trend-filters">
+        <div class="field">
+          <label class="field-label">Specialization</label>
+          <select id="dTrendBranch" disabled>
+            <option value="">Loading…</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Category</label>
+          <select id="dTrendCategory" disabled>
+            <option value="">Select specialization first</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Quota / Type</label>
+          <select id="dTrendQuota" disabled>
+            <option value="">Select category first</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="trends-ladies-row">
+        <label><input type="checkbox" id="dTrendLadies" disabled> Ladies seats only</label>
+        <button class="chip seat-matrix-toggle" id="dSeatMatrixBtn" type="button">Seat Matrix</button>
+      </div>
+
+      <!-- Year selector — replaces the old Round 1/2/3/4 chips. Clicking
+           a year shows that year's data table below (see requirement:
+           "Replace the R1/R2 select options with year options"). -->
+      <div class="trends-rounds" id="dTrendRounds"></div>
+
+      <div class="trends-body d-trend-body">
+        <div class="trends-empty" id="dTrendEmpty">
+          <div><strong>No data yet</strong>Loading this college's cutoff data…</div>
+        </div>
+        <div class="trends-loading" id="dTrendLoading" style="display:none;">Loading cutoff data…</div>
+        <div id="dTrendTable" style="display:none;"></div>
+      </div>
+
+      <div class="trends-insights" id="dTrendInsights" style="display:none;">
+        <div class="tin-card"><span class="tin-label">Highest cutoff</span><span class="tin-value" id="dTinHighest">—</span></div>
+        <div class="tin-card"><span class="tin-label">Lowest cutoff</span><span class="tin-value" id="dTinLowest">—</span></div>
+        <div class="tin-card"><span class="tin-label">Year-over-year</span><span class="tin-value" id="dTinYoy">—</span></div>
+        <div class="tin-card"><span class="tin-label">Data points</span><span class="tin-value" id="dTinCount">—</span></div>
+      </div>
+
+      <p class="trends-note" id="dTrendNote"></p>
+
+      <!-- Seat Matrix table — hidden until the toggle above is clicked -->
+      <div id="dSeatMatrixWrap" style="display:none;">
+        <div class="d-section-title" style="margin-top:20px;">Seat Matrix</div>
+        <div id="dSeatMatrixBody"><p class="d-text">Loading seat matrix…</p></div>
+      </div>
+    </div>`;
+}
+
+/* ── renderSlide(college, userPct) ───────────────────────────
+   Builds the full HTML for the slide's body: the gap chart is now
+   the FIRST thing shown (nothing above it — the verdict banner and
+   stat grid were removed as misleading), then about text,
+   highlights, placement, admission note, and CTA buttons.          */
+function renderSlide(c, userPct) {
+  /* Highlight chips (only rendered if college.highlights exists) */
+  const highlights = (c.highlights || []).map(h => `<span class="d-chip">${h}</span>`).join("");
+
+  /* Placement bars (only if college.placement exists) */
+  const placement = c.placement ? `
+    <div class="d-section">
+      <div class="d-section-title">Placement Snapshot</div>
+      <div class="d-bars">
+        <div class="d-bar-row">
+          <span class="lbl">Placement Rate</span>
+          <div class="d-bar-track"><div class="d-bar-fill" data-w="${c.placement.rate}"></div></div>
+          <span class="val">${c.placement.rate}%</span>
+        </div>
+        <div class="d-bar-row">
+          <span class="lbl">Average CTC</span>
+          <div class="d-bar-track"><div class="d-bar-fill" data-w="65"></div></div>
+          <span class="val">${c.placement.avg}</span>
+        </div>
+        <div class="d-bar-row">
+          <span class="lbl">Highest CTC</span>
+          <div class="d-bar-track"><div class="d-bar-fill" data-w="100"></div></div>
+          <span class="val">${c.placement.highest}</span>
+        </div>
+      </div>
+    </div>` : "";
+
+  const about = c.about ? `
+    <div class="d-section">
+      <div class="d-section-title">About the Programme</div>
+      <p class="d-text">${c.about}</p>
+    </div>` : "";
+
+  const note = c.eligibilityNote ? `
+    <div class="d-section">
+      <div class="d-section-title">Admission Note</div>
+      <p class="d-text">${c.eligibilityNote}</p>
+    </div>` : "";
+
+  /* Return everything as one big HTML string */
+  return `
+    ${buildGapChart(c, userPct)}
+    ${renderDrawerTrendSection()}
+    ${about}
+    ${highlights ? `<div class="d-section"><div class="d-section-title">Highlights</div><div class="d-chips">${highlights}</div></div>` : ""}
+    ${placement}
+    ${note}
+
+    <div class="d-cta-row">
+      ${c.website ? `<a class="d-cta primary" href="${c.website}" target="_blank" rel="noopener">Visit Website ↗</a>` : ""}
+    </div>
+  `;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   ██  JS SECTION 3: THE ENGINE
+   ───────────────────────────────────────────────────────────────────
+   Grabs DOM elements, wires up events, and drives everything.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Shortcut: `$("id")` instead of `document.getElementById("id")` ── */
+const $ = id => document.getElementById(id);
+
+/* ═══════════════════════════════════════════════════════════════════
+   ██  enhanceSelect(selectEl, opts) — searchable-dropdown wrapper
+   ───────────────────────────────────────────────────────────────────
+   Wraps a plain, already-populated <select> with a custom button +
+   panel UI, WITHOUT changing how the rest of the app talks to it: the
+   native <select> stays in the DOM (hidden), still fires "change",
+   still has a normal .value and .disabled — every existing piece of
+   code (populateSelect(), citySelect.value, etc.) keeps working
+   completely unmodified. The panel is always the same fixed size and
+   its option list scrolls once there are more items than fit, and
+   opts.search adds a live-filter search box above the list (the full
+   option list is still shown underneath, just narrowed by the
+   filter — nothing is ever removed from the underlying select). ── */
+function enhanceSelect(selectEl, opts = {}) {
+  if (!selectEl || selectEl._enhanced) return selectEl && selectEl._enhanced;
+  const search = opts.search !== false;
+

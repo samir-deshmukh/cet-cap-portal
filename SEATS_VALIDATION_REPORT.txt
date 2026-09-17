@@ -1,0 +1,37 @@
+Validating 4 seat-matrix files in data/raw/seats
+
+FILE                    ROWS   CAT  LANE  SEATS  DUP  ANOM
+----------------------------------------------------------
+BBA_SM.csv            23,161     0     0      0    0     0
+BCA_SM.csv            21,828     0     0      0    0     0
+MBA_SM.csv            16,210     0     0      0    0     4
+MCA_SM.csv             9,070     0     0      0    0     0
+
+Exact duplicate (institution+choice+lane+category+gender) rows: 0
+
+=== DUPLICATE FILE CONTENT ===
+  ✓ None
+
+=== UNKNOWN CATEGORIES (0) ===
+  ✓ All recognised
+
+=== UNKNOWN ALLOCATION LANES (0) ===
+  ✓ All recognised
+
+=== QUARANTINED EXTRACTION ANOMALIES (4) ===
+  (category values individually verified as PDF column-shift
+   artifacts, not real category codes. Excluded from seats
+   and logged to seats_ingest_errors, not counted below.)
+  ⚠ MBA_SM.csv: institution_code=02508 choice_code=0250864810 category-field='Services) SC' lane='HU'
+  ⚠ MBA_SM.csv: institution_code=02508 choice_code=0250864810 category-field='Services) SC' lane='OHU'
+  ⚠ MBA_SM.csv: institution_code=02508 choice_code=0250864810 category-field='Services) SC' lane='PWD'
+  ⚠ MBA_SM.csv: institution_code=02508 choice_code=0250864810 category-field='Services) SC' lane='DEF'
+
+=== TOTAL-ROW RECONCILIATION MISMATCHES (0) ===
+  (sum of category rows vs that lane's own "Total" row,
+   per institution_code + choice_code + allocation_type)
+  ✓ None — every lane's Total row matches its category rows
+
+==========================================================
+Total issues: 0  (+ 4 quarantined anomalies, handled separately)
+==========================================================

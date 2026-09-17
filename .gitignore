@@ -1,0 +1,25 @@
+# Data
+data/raw/
+data/processed/
+db/*.db
+db/*.db-journal
+db/*.db-wal
+db/*.db-shm
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Secrets
+.env
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
